@@ -3,153 +3,161 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Voice Deepfake Detector</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <title>Voice Deepfake Detector</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
   <style>
-    #progressBar {
-      width: 100%;
-      background-color: #333;
-      height: 12px;
-      border-radius: 9999px;
-      overflow: hidden;
-      margin-top: 20px;
+    body {
+      font-family: 'Poppins', sans-serif;
     }
-    #bar {
-      height: 100%;
-      background-color: #facc15;
-      width: 0%;
-      transition: width 0.5s ease;
+    .fade-in {
+      animation: fadeIn 1.2s ease-in-out both;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .glass {
+      backdrop-filter: blur(15px);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+    }
+    .chart-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: white;
+      pointer-events: none;
     }
   </style>
 </head>
-<body class="bg-gradient-to-br from-gray-900 to-black text-white min-h-screen flex flex-col">
+<body class="bg-gradient-to-br from-gray-900 to-black text-white min-h-screen">
 
-  <!-- Navigation Bar -->
-  <nav class="w-full flex justify-between items-center px-6 py-4 bg-gray-800 shadow-lg sticky top-0 z-50">
-    <h1 class="text-2xl font-bold tracking-wider">🔍 Voice Deepfake AI</h1>
-    <ul class="flex space-x-4 text-sm md:text-base">
-      <a href="image_ditector"><li class="hover:text-yellow-400 cursor-pointer">Image Detector (Coming Soon)</li></a>
-      <a href="/about"><li class="hover:text-yellow-400 cursor-pointer">About Us</li></a>
-      <a href="/team" class="hover:text-yellow-400">Team / Credits</a>
-
+  <!-- NAVBAR -->
+  <nav class="w-full flex justify-between items-center px-4 md:px-8 py-4 bg-gray-800 shadow-md sticky top-0 z-50">
+    <h1 class="text-xl md:text-2xl font-bold tracking-wide text-yellow-400">🤖 AI DeepFake Detector</h1>
+    <ul class="flex space-x-3 md:space-x-6 text-sm md:text-base">
+      <li><a href="index.html" class="hover:text-yellow-400 transition">Voice Detector</a></li>
+      <li class="text-gray-500">Image Detector (Soon)</li>
+      <li><a href="about.html" class="hover:text-yellow-400 transition">About AI</a></li>
+      <li><a href="team.html" class="hover:text-yellow-400 transition">Team</a></li>
     </ul>
   </nav>
 
-  <!-- Header Section -->
-  <header class="text-center mt-10 px-4">
-    <h2 class="text-4xl md:text-5xl font-extrabold mb-4">Detect Deepfakes Instantly</h2>
-    <p class="text-lg text-gray-300">Upload a voice clip and find out if it's real or AI-generated.</p>
-  </header>
-
-  <!-- Upload Section -->
-  <section class="mt-12 flex flex-col items-center flex-grow">
-    <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.6.2/dist/dotlottie-wc.js" type="module" ></script>
-<dotlottie-wc 
-  src="https://lottie.host/46858c51-2e2e-4d9c-8ad1-e8f0dbcaebe8/BXM6uvolee.lottie" 
-  style="width: 250px; height: 250px" 
-  autoplay loop speed="1">
-</dotlottie-wc>
-
-    <form id="uploadForm" class="bg-gray-800 p-6 rounded-xl shadow-xl w-[90%] max-w-xl" enctype="multipart/form-data" method="POST">
-      <input type="file" name="audio" accept="audio/*" required class="w-full mb-4 p-2 rounded bg-gray-700" />
-      <button type="submit" class="bg-yellow-400 text-black font-bold px-6 py-2 rounded-lg hover:bg-yellow-300 transition-all duration-300 w-full">
-        Analyze Voice
-      </button>
-    </form>
-
-    <!-- Progress Bar -->
-    <div id="progressBar" class="w-[90%] max-w-xl mt-6 hidden">
-      <div id="bar"></div>
-    </div>
-
-    <!-- Result Section -->
-    <div id="result" class="mt-10 hidden text-center p-6 rounded-lg bg-gray-800 shadow-lg border border-yellow-500 w-[90%] max-w-xl">
-      <h3 class="text-xl font-bold mb-2">Result:</h3>
-      <p id="resultText" class="text-2xl mt-2 font-semibold"></p>
-      <p id="confidenceText" class="text-sm text-gray-400 mt-1"></p>
-      <canvas id="confidenceChart" width="200" height="200" class="mx-auto mt-6"></canvas>
+  <!-- HERO -->
+  <section class="text-center py-10 md:py-14 fade-in">
+    <div class="max-w-4xl mx-auto">
+      <lottie-player src="https://assets2.lottiefiles.com/packages/lf20_0fhlytwe.json" background="transparent" speed="1" style="width: 260px; height: 260px; margin: auto;" loop autoplay></lottie-player>
+      <h2 class="text-3xl md:text-5xl font-extrabold text-yellow-400 mb-4">AI Voice Deepfake Detector</h2>
+      <p class="text-gray-300 max-w-xl mx-auto text-base md:text-lg">Upload a voice clip and let AI detect if it’s real or fake — instantly.</p>
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer class="text-center mt-20 text-gray-500 text-sm pb-10">
-    Made with ❤️ by Yash | Future-ready AI Tools
+  <!-- UPLOAD PANEL -->
+  <section class="max-w-xl mx-auto px-4 py-8 rounded-3xl glass fade-in">
+    <form id="uploadForm" class="flex flex-col space-y-4">
+      <input type="file" accept="audio/*" class="px-4 py-2 bg-gray-900 border border-yellow-400 rounded-md text-white text-sm" required />
+      <button type="submit" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-2 rounded-md transition transform hover:scale-105 text-sm">Analyze Voice</button>
+    </form>
+    <div class="mt-6 hidden" id="loadingAnim">
+      <lottie-player src="https://assets6.lottiefiles.com/packages/lf20_qp1q7mct.json" background="transparent" speed="1" style="width: 100px; height: 100px; margin: auto;" loop autoplay></lottie-player>
+      <p class="text-center text-gray-300 mt-2">Analyzing voice sample...</p>
+    </div>
+  </section>
+
+  <!-- RESULT PANEL -->
+  <section class="max-w-2xl mx-auto px-4 py-10 fade-in hidden" id="resultSection">
+    <h3 class="text-2xl md:text-3xl font-bold text-yellow-400 mb-6 text-center">AI Analysis Result</h3>
+    <div class="relative w-60 h-60 mx-auto">
+      <canvas id="confidenceChart" width="240" height="240"></canvas>
+      <div id="confidenceValue" class="chart-center"></div>
+    </div>
+    <p id="resultLabel" class="mt-6 text-xl md:text-2xl text-center font-bold"></p>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="text-center mt-20 text-gray-500 text-sm pb-10 px-4">
+    Developed by Yash Verma ✨ — Powered by Hive AI
   </footer>
 
-  <!-- JavaScript -->
   <script>
     const form = document.getElementById('uploadForm');
-    const resultBox = document.getElementById('result');
-    const resultText = document.getElementById('resultText');
-    const confidenceText = document.getElementById('confidenceText');
-    const progressBar = document.getElementById('progressBar');
-    const bar = document.getElementById('bar');
-
-    let chart;
+    const loading = document.getElementById('loadingAnim');
+    const result = document.getElementById('resultSection');
+    const label = document.getElementById('resultLabel');
+    const confidenceText = document.getElementById('confidenceValue');
+    let chartInstance = null;
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const formData = new FormData(form);
-      resultBox.classList.add('hidden');
-      resultText.innerText = "";
-      confidenceText.innerText = "";
-      progressBar.classList.remove('hidden');
-      bar.style.width = '0%';
+      const fileInput = form.querySelector('input[type="file"]');
+      const file = fileInput.files[0];
+      if (!file) return;
 
-      let progress = 0;
-      const interval = setInterval(() => {
-        if (progress < 90) {
-          progress += 10;
-          bar.style.width = progress + '%';
-        }
-      }, 300);
+      loading.classList.remove('hidden');
+      result.classList.add('hidden');
+
+      const formData = new FormData();
+      formData.append('file', file);
 
       try {
-        const res = await fetch("/", {
-          method: "POST",
-          headers: { "X-Requested-With": "XMLHttpRequest" },
+        const res = await fetch('http://192.168.165.245:7860/predict', {
+          method: 'POST',
           body: formData
         });
         const data = await res.json();
 
-        clearInterval(interval);
-        bar.style.width = '100%';
+        loading.classList.add('hidden');
+        result.classList.remove('hidden');
 
-        resultText.innerText = data.prediction === 'FAKE' ? '🚨 Deepfake Detected!' : '✅ Real Human Voice';
-        confidenceText.innerText = `Confidence: ${data.confidence}%`;
-        resultBox.classList.remove('hidden');
+        const confidence = Math.round(parseFloat(data.confidence));
+        const isFake = data.prediction.toLowerCase() === 'fake';
 
-        // Draw circular confidence meter
-        if (chart) chart.destroy();
-        chart = new Chart(document.getElementById('confidenceChart'), {
+        label.textContent = isFake
+          ? `🔴 FAKE VOICE DETECTED (${confidence}%)`
+          : `🟢 REAL VOICE DETECTED (${confidence}%)`;
+
+        confidenceText.textContent = `${confidence}%`;
+
+        // Destroy previous chart
+        if (chartInstance) chartInstance.destroy();
+
+        chartInstance = new Chart(document.getElementById('confidenceChart'), {
           type: 'doughnut',
           data: {
             labels: ['Confidence', 'Remaining'],
             datasets: [{
-              label: 'Confidence',
-              data: [data.confidence, 100 - data.confidence],
-              backgroundColor: [
-                data.prediction === 'FAKE' ? '#ef4444' : '#10b981',
-                '#374151'
-              ],
-              borderWidth: 1
+              label: 'Confidence %',
+              data: [confidence, 100 - confidence],
+              backgroundColor: [isFake ? '#EF4444' : '#10B981', '#1F2937'],
+              borderWidth: 2,
+              borderColor: '#111827'
             }]
           },
           options: {
-            cutout: '70%',
+            cutout: '75%',
             plugins: {
-              legend: { display: false },
-              tooltip: { enabled: false }
-            }
+              legend: { display: false }
+            },
+            responsive: true,
+            maintainAspectRatio: false
           }
         });
+
+        // Scroll to result
+        setTimeout(() => {
+          result.scrollIntoView({ behavior: 'smooth' });
+        }, 200);
       } catch (err) {
-        clearInterval(interval);
-        bar.style.width = '0%';
-        resultText.innerText = "❌ Error analyzing file.";
-        resultBox.classList.remove('hidden');
+        loading.classList.add('hidden');
+        alert('Error analyzing voice. Please try again.');
+        console.error(err);
       }
     });
   </script>

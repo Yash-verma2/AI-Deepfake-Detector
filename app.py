@@ -1,58 +1,56 @@
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import os
-import numpy as np
-import librosa
 import joblib
-from flask import Flask, request, render_template, jsonify
+import librosa
+import numpy as np
+import uuid
 
 app = Flask(__name__)
-model = joblib.load("model/fakevoice_model.pkl")
-UPLOAD_FOLDER = "uploads"
+CORS(app)
+
+# Load your trained model
+model = joblib.load('model/fakevoice_model.pkl')
+
+UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-@app.route("/about")
-def about():
-    return render_template("about.html")
+def extract_features(audio_path):
+    audio, sr = librosa.load(audio_path, duration=3)
+    mfcc = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=13)
+    mean_mfcc = np.mean(mfcc.T, axis=0)
+    return mean_mfcc
 
-@app.route("/team")
-def team():
-    return render_template("team.html")
+@app.route('/predict', methods=['POST'])
+def predict():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file uploaded'}), 400
 
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'Empty filename'}), 400
 
+    filename = str(uuid.uuid4()) + ".wav"
+    file_path = os.path.join(UPLOAD_FOLDER, filename)
+    file.save(file_path)
 
-@app.route("/", methods=["GET", "POST"])
-def index():
-    if request.method == "POST":
-        file = request.files["audio"]
-        filepath = os.path.join(UPLOAD_FOLDER, file.filename)
-        file.save(filepath)
+    features = extract_features(file_path)
+    if features is None:
+        return jsonify({'error': 'Feature extraction failed'}), 500
 
-        # Extract features
-        audio, sr = librosa.load(filepath, duration=7)
-        mfcc = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=13)
-        mean_mfcc = np.mean(mfcc.T, axis=0).reshape(1, -1)
+    features = features.reshape(1, -1)  # 💡 Reshape is required
+    prediction = model.predict(features)[0]
+    proba = model.predict_proba(features)[0]
 
-        # Predict
-        prediction = model.predict(mean_mfcc)[0]
-        
-        # Get model confidence (probability score)
-        try:
-            probabilities = model.predict_proba(mean_mfcc)[0]
-            confidence = float(round(np.max(probabilities) * 100, 2))
-        except AttributeError:
-            confidence = 100.0  # Fallback if model has no predict_proba
+    label = 'Fake' if prediction == 1 else 'Real'
+    confidence = round(float(np.max(proba)) * 100, 2)
 
-        verdict = "FAKE" if prediction == 1 else "REAL"
+    os.remove(file_path)
 
-        # Handle AJAX/JS request
-        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-            return jsonify({"prediction": verdict, "confidence": confidence})
+    return jsonify({
+        'prediction': label,
+        'confidence': confidence
+    })
 
-        # Fallback for HTML rendering
-        result_text = "Fake Voice (AI Generated)" if prediction == 1 else "Real Voice"
-        return render_template("index.html", result=result_text)
-
-    return render_template("index.html", result=None)
-
-if __name__ == "__main__":
-    port = int(os.environ.get('PORT', 7860))
-    app.run(host='0.0.0.0', port=port)
+if __name__ == '__main__':
+    app.run(debug=True, host="0.0.0.0", port=7860)
