@@ -107,7 +107,7 @@
       formData.append('file', file);
 
       try {
-        const res = await fetch('http://192.168.165.245:7860/predict', {
+        const res = await fetch('http://192.168.16.245:7860/predict', {
           method: 'POST',
           body: formData
         });

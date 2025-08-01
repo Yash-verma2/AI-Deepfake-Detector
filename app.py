@@ -1,6 +1,8 @@
+import os
+os.environ['NUMBA_DISABLE_CACHE'] = '1'  # ✅ Must come first!
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import os
 import joblib
 import librosa
 import numpy as np
@@ -12,7 +14,7 @@ CORS(app)
 # Load your trained model
 model = joblib.load('model/fakevoice_model.pkl')
 
-UPLOAD_FOLDER = 'uploads'
+UPLOAD_FOLDER = '/tmp/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 def extract_features(audio_path):
